@@ -75,7 +75,7 @@ jobs:
         uses: KJ002/read-yaml@main
         with:
           file: "./wd/workflow-repo/version.yml"
-          key-path: '["version", "backend"]'
+          key-path: '["version", "proxy"]'
       - name: Push to docker
         shell: bash
         run: |
