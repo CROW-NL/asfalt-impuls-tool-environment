@@ -1,0 +1,87 @@
+name: crow-frontend-pipeline-development
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  DOCKER_REPOSITORY_URL: ${{secrets.DOCKER_REPOSITORY_URL}}
+  DOCKER_REPOSITORY_USER: ${{secrets.DOCKER_REPOSITORY_USER}}
+  DOCKER_REPOSITORY_PASSWORD: ${{secrets.DOCKER_REPOSITORY_PASSWORD}}
+  DOCKER_LATEST_IMAGE: latest
+
+on:
+  push:
+    branches:
+      - development
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_CONTAINER_NAME: web/api
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          path: ./wd/workflow-repo
+      - name: Run read-yaml action
+        id: frontend-version
+        uses: KJ002/read-yaml@main
+        with:
+          file: "./wd/workflow-repo/version.yml"
+          key-path: '["version", "backend"]'
+      - name: Push to docker
+        shell: bash
+        run: |
+          docker login ${{env.DOCKER_REPOSITORY_URL}} -u ${{env.DOCKER_REPOSITORY_USER}} -p ${{env.DOCKER_REPOSITORY_PASSWORD}}
+          docker pull ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{steps.frontend-version.outputs.data}}
+          docker tag ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{steps.frontend-version.outputs.data}} ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{env.DOCKER_LATEST_IMAGE}}
+          docker image ls
+          docker push ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{env.DOCKER_LATEST_IMAGE}}
+          docker logout ${{env.DOCKER_REPOSITORY_URL}}
+  frontend:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_CONTAINER_NAME: web/app
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          path: ./wd/workflow-repo
+      - name: Run read-yaml action
+        id: frontend-version
+        uses: KJ002/read-yaml@main
+        with:
+          file: "./wd/workflow-repo/version.yml"
+          key-path: '["version", "frontend"]'
+      - name: Push to docker
+        shell: bash
+        run: |
+          docker login ${{env.DOCKER_REPOSITORY_URL}} -u ${{env.DOCKER_REPOSITORY_USER}} -p ${{env.DOCKER_REPOSITORY_PASSWORD}}
+          docker pull ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{steps.frontend-version.outputs.data}}
+          docker tag ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{steps.frontend-version.outputs.data}} ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{env.DOCKER_LATEST_IMAGE}}
+          docker image ls
+          docker push ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{env.DOCKER_LATEST_IMAGE}}
+          docker logout ${{env.DOCKER_REPOSITORY_URL}}
+  proxy:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_CONTAINER_NAME: web/proxy
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          path: ./wd/workflow-repo
+      - name: Run read-yaml action
+        id: frontend-version
+        uses: KJ002/read-yaml@main
+        with:
+          file: "./wd/workflow-repo/version.yml"
+          key-path: '["version", "proxy"]'
+      - name: Push to docker
+        shell: bash
+        run: |
+          docker login ${{env.DOCKER_REPOSITORY_URL}} -u ${{env.DOCKER_REPOSITORY_USER}} -p ${{env.DOCKER_REPOSITORY_PASSWORD}}
+          docker pull ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{steps.frontend-version.outputs.data}}
+          docker tag ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{steps.frontend-version.outputs.data}} ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{env.DOCKER_LATEST_IMAGE}}
+          docker image ls
+          docker push ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{env.DOCKER_LATEST_IMAGE}}
+          docker logout ${{env.DOCKER_REPOSITORY_URL}}
