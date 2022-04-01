@@ -31,10 +31,10 @@ jobs:
       - name: Push to docker
         shell: bash
         run: |
-          docker login ${{env.DOCKER_REPOSITORY_URL}} -u ${{env.DOCKER_REPOSITORY_USER}} -p ${{env.DOCKER_REPOSITORY_PASSWORD}}
+          docker login ${{secrets.TEST_DOCKER_REPOSITORY_URL}} -u ${{secrets.TEST_DOCKER_REPOSITORY_USER}} -p ${{secrets.TEST_DOCKER_REPOSITORY_PASSWORD}}
           docker pull ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{steps.frontend-version.outputs.data}}
           docker tag ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{steps.frontend-version.outputs.data}} ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{env.DOCKER_LATEST_IMAGE}}
-          docker image ls
+          docker login ${{env.DOCKER_REPOSITORY_URL}} -u ${{env.DOCKER_REPOSITORY_USER}} -p ${{env.DOCKER_REPOSITORY_PASSWORD}}
           docker push ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{env.DOCKER_LATEST_IMAGE}}
           docker logout ${{env.DOCKER_REPOSITORY_URL}}
   frontend:
