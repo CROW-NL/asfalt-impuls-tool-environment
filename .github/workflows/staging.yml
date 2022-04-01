@@ -28,16 +28,19 @@ jobs:
         with:
           file: "./wd/workflow-repo/version.yml"
           key-path: '["version", "backend"]'
-      - name: Push to docker
+      - name: Pull version from test registry
         shell: bash
         run: |
           docker login ${{secrets.TEST_DOCKER_REPOSITORY_URL}} -u ${{secrets.TEST_DOCKER_REPOSITORY_USER}} -p ${{secrets.TEST_DOCKER_REPOSITORY_PASSWORD}}
           docker pull ${{secrets.TEST_DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{steps.frontend-version.outputs.data}}
           docker tag ${{secrets.TEST_DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{steps.frontend-version.outputs.data}} ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{env.DOCKER_LATEST_IMAGE}}
+          docker logout ${{secrets.TEST_DOCKER_REPOSITORY_URL}}
+      - name: Push to staging repository
+        shell: bash
+        run: |          
           docker login ${{env.DOCKER_REPOSITORY_URL}} -u ${{env.DOCKER_REPOSITORY_USER}} -p ${{env.DOCKER_REPOSITORY_PASSWORD}}
           docker push ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{env.DOCKER_LATEST_IMAGE}}
           docker logout ${{env.DOCKER_REPOSITORY_URL}}
-          docker logout ${{secrets.TEST_DOCKER_REPOSITORY_URL}}
   frontend:
     runs-on: ubuntu-latest
     env:
@@ -53,13 +56,17 @@ jobs:
         with:
           file: "./wd/workflow-repo/version.yml"
           key-path: '["version", "frontend"]'
-      - name: Push to docker
+      - name: Pull version from test registry
         shell: bash
         run: |
+          docker login ${{secrets.TEST_DOCKER_REPOSITORY_URL}} -u ${{secrets.TEST_DOCKER_REPOSITORY_USER}} -p ${{secrets.TEST_DOCKER_REPOSITORY_PASSWORD}}
+          docker pull ${{secrets.TEST_DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{steps.frontend-version.outputs.data}}
+          docker tag ${{secrets.TEST_DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{steps.frontend-version.outputs.data}} ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{env.DOCKER_LATEST_IMAGE}}
+          docker logout ${{secrets.TEST_DOCKER_REPOSITORY_URL}}
+      - name: Push to staging repository
+        shell: bash
+        run: |          
           docker login ${{env.DOCKER_REPOSITORY_URL}} -u ${{env.DOCKER_REPOSITORY_USER}} -p ${{env.DOCKER_REPOSITORY_PASSWORD}}
-          docker pull ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{steps.frontend-version.outputs.data}}
-          docker tag ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{steps.frontend-version.outputs.data}} ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{env.DOCKER_LATEST_IMAGE}}
-          docker image ls
           docker push ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{env.DOCKER_LATEST_IMAGE}}
           docker logout ${{env.DOCKER_REPOSITORY_URL}}
   proxy:
@@ -77,12 +84,16 @@ jobs:
         with:
           file: "./wd/workflow-repo/version.yml"
           key-path: '["version", "proxy"]'
-      - name: Push to docker
+      - name: Pull version from test registry
         shell: bash
         run: |
+          docker login ${{secrets.TEST_DOCKER_REPOSITORY_URL}} -u ${{secrets.TEST_DOCKER_REPOSITORY_USER}} -p ${{secrets.TEST_DOCKER_REPOSITORY_PASSWORD}}
+          docker pull ${{secrets.TEST_DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{steps.frontend-version.outputs.data}}
+          docker tag ${{secrets.TEST_DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{steps.frontend-version.outputs.data}} ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{env.DOCKER_LATEST_IMAGE}}
+          docker logout ${{secrets.TEST_DOCKER_REPOSITORY_URL}}
+      - name: Push to staging repository
+        shell: bash
+        run: |          
           docker login ${{env.DOCKER_REPOSITORY_URL}} -u ${{env.DOCKER_REPOSITORY_USER}} -p ${{env.DOCKER_REPOSITORY_PASSWORD}}
-          docker pull ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{steps.frontend-version.outputs.data}}
-          docker tag ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{steps.frontend-version.outputs.data}} ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{env.DOCKER_LATEST_IMAGE}}
-          docker image ls
           docker push ${{env.DOCKER_REPOSITORY_URL}}/${{env.DOCKER_CONTAINER_NAME}}:${{env.DOCKER_LATEST_IMAGE}}
           docker logout ${{env.DOCKER_REPOSITORY_URL}}
