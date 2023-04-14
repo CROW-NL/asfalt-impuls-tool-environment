@@ -1,4 +1,4 @@
 version:
   backend: 2.4.0
-  frontend: 2.2.0
+  frontend: 2.4.0
   proxy: 1.1.2
